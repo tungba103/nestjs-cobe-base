@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2021",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@n-config": ["src/config/index.ts"],
+      "@n-constants": ["src/constants/index.ts"],
+      "@n-decorators": ["src/decorators/index.ts"],
+      "@n-dtos": ["src/dtos/index.ts"],
+      "@n-filter-exceptions": ["src/filter-exceptions/index.ts"],
+      "@n-guards": ["src/guards/index.ts"],
+      "@n-interceptors": ["src/interceptors/index.ts"],
+      "@n-middlewares": ["src/middlewares/index.ts"],
+      "@n-models": ["src/models/index.ts"],
+      "@n-modules": ["src/modules/index.ts"],
+      "@n-utils": ["src/utils/index.ts"],
+    },
+  }
+}
+
