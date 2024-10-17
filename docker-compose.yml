@@ -1,0 +1,42 @@
+services:
+  backend:
+    container_name: nestjs_backend
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    tty: true
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    ports:
+      - ${BACKEND_PORT}:9100
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    networks:
+      - clinic_network
+
+  postgres:
+    image: postgres:15
+    container_name: postgres_db
+    restart: unless-stopped
+    ports:
+      - '${POSTGRES_PORT}:5432'
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - clinic_network
+
+volumes:
+  postgres_data:
+
+networks:
+  clinic_network:
+    driver: bridge
