@@ -1,4 +1,4 @@
-import { PaginationWithSearchParamsDto } from 'src/dtos/pagination-params.dto';
+import { PaginationWithSearchParamsDto } from '@n-dtos';
 
 export class FilterUserDto extends PaginationWithSearchParamsDto {
   constructor() {

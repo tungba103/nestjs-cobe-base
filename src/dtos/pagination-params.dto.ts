@@ -1,7 +1,7 @@
 import { IsNumber, Min, IsOptional, Max, IsString } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { COMMON_CONSTANT } from 'src/constants/common.constant';
+import { COMMON_CONSTANT } from '@n-constants';
 
 export class PaginationParamsDto {
   @IsOptional()

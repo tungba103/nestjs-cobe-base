@@ -1,13 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
-import {
-  convertTextToCode,
-  makePaginationResponse,
-} from 'src/utils/common.util';
+import { convertTextToCode, makePaginationResponse } from 'utils';
 import { FilterRoleDto } from './dto/filter-role.dto';
 import { Prisma } from '@prisma/client';
+import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
 export class RolesService {

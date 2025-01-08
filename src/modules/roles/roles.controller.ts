@@ -11,9 +11,9 @@ import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthClaims } from 'src/decorators/claims-auth.decorator';
-import { Permissions } from 'src/decorators/permissions.decorator';
-import { PermissionNameType } from 'src/constants/permissions/permission-name-type.enum';
+import { AuthClaims } from '@n-decorators';
+import { Permissions } from '@n-decorators';
+import { PermissionNameType } from '@n-constants';
 import { FilterRoleDto } from './dto/filter-role.dto';
 
 @Controller('roles')

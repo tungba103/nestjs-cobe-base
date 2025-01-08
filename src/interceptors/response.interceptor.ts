@@ -8,7 +8,7 @@ import {
 import { BaseExceptionFilter } from '@nestjs/core';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { LoggingModel } from 'src/models';
+import { LoggingModel } from '@n-models';
 
 export interface Response<T> {
   message: string;

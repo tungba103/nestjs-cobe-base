@@ -11,9 +11,9 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { Permissions } from 'src/decorators/permissions.decorator';
-import { PermissionNameType } from 'src/constants/permissions/permission-name-type.enum';
-import { AuthClaims } from 'src/decorators/claims-auth.decorator';
+import { Permissions } from '@n-decorators';
+import { PermissionNameType } from '@n-constants';
+import { AuthClaims } from '@n-decorators';
 import { FilterUserDto } from './dto/filter-user.dto';
 
 @Controller('users')

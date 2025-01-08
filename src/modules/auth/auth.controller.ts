@@ -8,7 +8,7 @@ import {
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthClaims } from 'src/decorators/claims-auth.decorator';
+import { AuthClaims } from '@n-decorators';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Controller('auth')

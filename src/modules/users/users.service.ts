@@ -1,11 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'prisma/prisma.service';
 import { FilterUserDto } from './dto/filter-user.dto';
 import { Prisma } from '@prisma/client';
-import { makePaginationResponse } from 'src/utils/common.util';
-
+import { makePaginationResponse } from 'utils';
 @Injectable()
 export class UsersService {
   constructor(private prismaService: PrismaService) {}
