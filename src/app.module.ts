@@ -12,6 +12,7 @@ import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseInterceptor } from './interceptors/response.interceptor';
 import { CustomersModule } from './modules/customers/customers.module';
+import { VisitsModule } from './modules/visits/visits.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { CustomersModule } from './modules/customers/customers.module';
     UsersModule,
     RolesModule,
     CustomersModule,
+    VisitsModule,
   ],
   controllers: [AppController],
   providers: [

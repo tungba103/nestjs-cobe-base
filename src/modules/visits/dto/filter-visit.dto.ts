@@ -1,6 +1,6 @@
 import { PaginationWithSearchParamsDto } from '@n-dtos';
 
-export class FilterCustomerDto extends PaginationWithSearchParamsDto {
+export class FilterVisitDto extends PaginationWithSearchParamsDto {
   constructor() {
     super();
   }

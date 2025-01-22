@@ -28,6 +28,13 @@ enum ServiceStatus {
   INACTIVE
 }
 
+enum VisitStatus {
+  NEW
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
 enum PermissionNameType {
   GET_USER
   GET_USERS
@@ -46,6 +53,7 @@ enum PermissionNameType {
   CREATE_CUSTOMER
   UPDATE_CUSTOMER
 }
+
 
 model User {
   id        Int     @id @default(autoincrement())
@@ -238,8 +246,9 @@ model Visit {
   id         Int @id @default(autoincrement())
   customerId Int @map("customer_id")
 
-  creatorId   Int?  @map("creator_id")
-  totalAmount Float @map("total_amount")
+  creatorId   Int  @map("creator_id")
+  creatorName String @map("creator_name")
+  totalAmount Float? @map("total_amount")
 
   diagnosis              String?
   symptoms               String?
@@ -252,13 +261,15 @@ model Visit {
   reExaminationTime DateTime? @map("re_examination_time")
   advice            String?
 
+  status            VisitStatus @default(NEW)
+  
   isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
-  Customer     Customer      @relation(fields: [customerId], references: [id])
-  Prescription Prescription? @relation(fields: [prescriptionId], references: [id])
-  ServiceUsage ServiceUsage? @relation(fields: [serviceUsageId], references: [id])
+  customer     Customer      @relation(fields: [customerId], references: [id])
+  prescription Prescription? @relation(fields: [prescriptionId], references: [id])
+  serviceUsage ServiceUsage? @relation(fields: [serviceUsageId], references: [id])
 
   @@map("visits")
 }

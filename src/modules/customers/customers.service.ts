@@ -39,10 +39,15 @@ export class CustomersService {
   }
 
   findAll(filter: FilterCustomerDto) {
-    const { page, pageSize, ...rest } = filter;
+    const { page, pageSize, search } = filter;
     const where: Prisma.CustomerWhereInput = {
       isActive: true,
-      ...rest,
+      ...(!!search && {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { parentPhone: { contains: search, mode: 'insensitive' } },
+        ],
+      }),
     };
 
     return this.prismaService.customer.findMany({
@@ -56,10 +61,15 @@ export class CustomersService {
   }
 
   count(filter: FilterCustomerDto) {
-    const { page, pageSize, ...rest } = filter;
+    const { search } = filter;
     const where: Prisma.CustomerWhereInput = {
       isActive: true,
-      ...rest,
+      ...(!!search && {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { parentPhone: { contains: search, mode: 'insensitive' } },
+        ],
+      }),
     };
 
     return this.prismaService.customer.count({ where });

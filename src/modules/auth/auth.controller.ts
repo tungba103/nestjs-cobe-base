@@ -29,11 +29,7 @@ export class AuthController {
 
     const result = await this.authService.login(user);
 
-    return {
-      message: 'Login successful',
-      status: 200,
-      result,
-    };
+    return result;
   }
 
   @Post('refresh')

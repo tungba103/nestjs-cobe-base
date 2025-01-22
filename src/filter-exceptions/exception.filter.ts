@@ -15,6 +15,7 @@ export class AllExceptionFilter implements ExceptionFilter {
   private readonly loggerTerminal = new Logger('😟😕 AllExceptionFilter');
 
   catch(exception: unknown, host: ArgumentsHost): void {
+    console.log('exception', exception);
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 

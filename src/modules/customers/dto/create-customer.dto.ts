@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Gender } from '@prisma/client';
+import { Transform } from 'class-transformer';
 import {
   IsEnum,
   IsNotEmpty,
@@ -21,8 +22,9 @@ export class CreateCustomerDto {
 
   @IsDateString()
   @IsOptional()
+  @Transform(({ value }) => new Date(value).toISOString())
   @ApiProperty({ required: false, example: '2024-01-01' })
-  birthDate?: string;
+  birthDate?: Date;
 
   @IsString()
   @IsNotEmpty()
