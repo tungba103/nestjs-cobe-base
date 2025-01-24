@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { CreateVisitDto } from './dto/create-visit.dto';
-import { UpdateVisitDto } from './dto/update-visit.dto';
 import { PrismaService } from 'prisma/prisma.service';
 import { FilterVisitDto } from './dto/filter-visit.dto';
 import { Prisma } from '@prisma/client';
 import { makePaginationResponse } from 'utils';
+import { UpdateVisitDto } from './dto/update-visit.dto';
 
 @Injectable()
 export class VisitsService {
@@ -33,9 +33,10 @@ export class VisitsService {
   }
 
   findAll(filter: FilterVisitDto) {
-    const { page, pageSize, search } = filter;
+    const { page, pageSize, search, customerId } = filter;
     const where: Prisma.VisitWhereInput = {
       isActive: true,
+      ...(!!customerId && { customerId }),
       ...(!!search && {
         OR: [
           { customer: { name: { contains: search, mode: 'insensitive' } } },
@@ -54,6 +55,7 @@ export class VisitsService {
         id: true,
         customer: true,
         status: true,
+        totalAmount: true,
         creatorId: true,
         creatorName: true,
         createdAt: true,
@@ -67,9 +69,10 @@ export class VisitsService {
   }
 
   count(filter: FilterVisitDto) {
-    const { search } = filter;
+    const { search, customerId } = filter;
     const where: Prisma.VisitWhereInput = {
       isActive: true,
+      ...(!!customerId && { customerId }),
       ...(!!search && {
         OR: [
           { customer: { name: { contains: search, mode: 'insensitive' } } },
@@ -90,14 +93,105 @@ export class VisitsService {
       where: { id },
       include: {
         customer: true,
+        prescription: {
+          include: {
+            PrescriptionItem: true,
+          },
+        },
+        serviceUsage: {
+          include: {
+            ServiceUsageItem: true,
+          },
+        },
       },
     });
   }
 
-  update(id: number, updateVisitDto: UpdateVisitDto) {
+  async updateVisitInfo(visitId: number, data: UpdateVisitDto) {
+    const { prescription, serviceUsage, ...rest } = data;
+
+    const { prescriptionItems, ...prescriptionData } = prescription;
+    const { serviceUsageItems, ...serviceUsageData } = serviceUsage;
+
+    const upsertPrescription = await this.upsertPrescription(
+      visitId,
+      {
+        ...prescriptionData,
+        visitId,
+      },
+      prescriptionItems,
+    );
+    const upsertServiceUsage = await this.upsertServiceUsage(
+      visitId,
+      {
+        ...serviceUsageData,
+        visitId,
+      },
+      serviceUsageItems,
+    );
+
+    return this.prismaService.visit.update({
+      where: { id: visitId },
+      data: {
+        ...rest,
+        prescriptionId: upsertPrescription.id,
+        serviceUsageId: upsertServiceUsage.id,
+      },
+    });
+  }
+
+  updateVisit(id: number, data: Prisma.VisitUpdateInput) {
     return this.prismaService.visit.update({
       where: { id },
-      data: updateVisitDto,
+      data,
+    });
+  }
+
+  upsertPrescription(
+    visitId: number,
+    prescription: Prisma.PrescriptionUncheckedCreateInput,
+    prescriptionItems: Prisma.PrescriptionItemUncheckedCreateWithoutPrescriptionInput[],
+  ) {
+    return this.prismaService.prescription.upsert({
+      where: { visitId },
+      update: {
+        ...prescription,
+        PrescriptionItem: {
+          deleteMany: {},
+          createMany: { data: prescriptionItems },
+        },
+      },
+      create: {
+        visitId,
+        ...prescription,
+        PrescriptionItem: {
+          createMany: { data: prescriptionItems },
+        },
+      },
+    });
+  }
+
+  upsertServiceUsage(
+    visitId: number,
+    serviceUsage: Prisma.ServiceUsageUncheckedCreateInput,
+    serviceUsageItems: Prisma.ServiceUsageItemUncheckedCreateWithoutServiceUsageInput[],
+  ) {
+    return this.prismaService.serviceUsage.upsert({
+      where: { visitId },
+      update: {
+        ...serviceUsage,
+        ServiceUsageItem: {
+          deleteMany: {},
+          createMany: { data: serviceUsageItems },
+        },
+      },
+      create: {
+        visitId,
+        ...serviceUsage,
+        ServiceUsageItem: {
+          createMany: { data: serviceUsageItems },
+        },
+      },
     });
   }
 }

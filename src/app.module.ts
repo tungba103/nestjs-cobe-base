@@ -13,6 +13,8 @@ import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseInterceptor } from './interceptors/response.interceptor';
 import { CustomersModule } from './modules/customers/customers.module';
 import { VisitsModule } from './modules/visits/visits.module';
+import { ProductsModule } from './modules/products/products.module';
+import { ServicesModule } from './modules/services/services.module';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { VisitsModule } from './modules/visits/visits.module';
     RolesModule,
     CustomersModule,
     VisitsModule,
+    ProductsModule,
+    ServicesModule,
   ],
   controllers: [AppController],
   providers: [
