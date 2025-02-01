@@ -59,9 +59,14 @@ export class ServicesService {
       where,
       skip: (page - 1) * pageSize,
       take: pageSize,
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: [
+        {
+          status: 'asc',
+        },
+        {
+          createdAt: 'desc',
+        },
+      ],
       include: {
         serviceCategory: true,
       },

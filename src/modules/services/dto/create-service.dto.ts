@@ -29,13 +29,13 @@ export class CreateServiceDto {
   @ApiProperty({ example: 100000 })
   price: number;
 
-  @IsEnum(ServiceStatus)
-  @IsOptional()
-  @ApiProperty({ enum: ServiceStatus, required: false })
-  status?: ServiceStatus;
-
   @IsString()
   @IsOptional()
   @ApiProperty({ required: false, example: 'Service description' })
   description?: string;
+
+  @IsEnum(ServiceStatus)
+  @IsOptional()
+  @ApiProperty({ required: false, example: ServiceStatus.ACTIVE })
+  status?: ServiceStatus;
 }

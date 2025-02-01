@@ -59,9 +59,14 @@ export class ProductsService {
       where,
       skip: (page - 1) * pageSize,
       take: pageSize,
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: [
+        {
+          status: 'asc',
+        },
+        {
+          createdAt: 'desc',
+        },
+      ],
       include: {
         productCategory: true,
       },

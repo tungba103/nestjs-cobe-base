@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { ProductStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import {
   IsNotEmpty,
@@ -6,6 +7,7 @@ import {
   IsNumber,
   IsOptional,
   Min,
+  IsEnum,
 } from 'class-validator';
 
 export class CreateProductDto {
@@ -31,4 +33,9 @@ export class CreateProductDto {
   @IsOptional()
   @ApiProperty({ required: false, example: 'Product description' })
   description?: string;
+
+  @IsEnum(ProductStatus)
+  @IsOptional()
+  @ApiProperty({ required: false, example: ProductStatus.ACTIVE })
+  status?: ProductStatus;
 }
