@@ -11,12 +11,28 @@ export class CustomersService {
   constructor(private prismaService: PrismaService) {}
 
   async create(createCustomerDto: CreateCustomerDto) {
-    const existingCustomer = await this.prismaService.customer.findUnique({
-      where: { parentPhone: createCustomerDto.parentPhone },
+    const existingCustomer = await this.prismaService.customer.findFirst({
+      where: {
+        parentPhone: createCustomerDto.parentPhone,
+        name: createCustomerDto.name,
+      },
     });
 
     if (existingCustomer) {
-      throw new BadRequestException('Parent phone number already exists');
+      throw new BadRequestException(
+        'Name And Parent phone number already exists',
+      );
+    }
+
+    const existingCustomer2 = await this.prismaService.customer.findFirst({
+      where: {
+        name: createCustomerDto.name,
+        birthDate: createCustomerDto.birthDate,
+      },
+    });
+
+    if (existingCustomer2) {
+      throw new BadRequestException('Name And Birth Date already exists');
     }
 
     return this.prismaService.customer.create({
@@ -38,26 +54,26 @@ export class CustomersService {
     );
   }
 
-  findAll(filter: FilterCustomerDto) {
+  async findAll(filter: FilterCustomerDto) {
     const { page, pageSize, search } = filter;
-    const where: Prisma.CustomerWhereInput = {
-      isActive: true,
-      ...(!!search && {
-        OR: [
-          { name: { contains: search, mode: 'insensitive' } },
-          { parentPhone: { contains: search, mode: 'insensitive' } },
-        ],
-      }),
-    };
+    const searchCondition = search
+      ? `AND (LOWER(c.name) LIKE LOWER('%${search}%') OR LOWER(c.parent_phone) LIKE LOWER('%${search}%'))`
+      : '';
 
-    return this.prismaService.customer.findMany({
-      where,
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    const query = `
+      SELECT
+        c.*,
+        MAX(v.created_at) as latest_visit
+      FROM "customers" c
+      LEFT JOIN "visits" v ON c.id = v."customer_id"
+      WHERE c.is_active = true ${searchCondition}
+      GROUP BY c.id
+      ORDER BY latest_visit DESC NULLS LAST
+      LIMIT ${pageSize}
+      OFFSET ${(page - 1) * pageSize}
+    `;
+
+    return this.prismaService.$queryRaw`${Prisma.raw(query)}`;
   }
 
   count(filter: FilterCustomerDto) {
@@ -79,7 +95,7 @@ export class CustomersService {
     return this.prismaService.customer.findUnique({
       where: { id },
       include: {
-        Visit: true,
+        visits: true,
       },
     });
   }

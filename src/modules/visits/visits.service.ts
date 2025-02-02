@@ -56,6 +56,10 @@ export class VisitsService {
           },
         ],
       }),
+      createdAt: {
+        gte: new Date(new Date().setHours(0, 0, 0, 0)),
+        lte: new Date(new Date().setHours(23, 59, 59, 999)),
+      },
     };
 
     return this.prismaService.visit.findMany({
@@ -93,6 +97,10 @@ export class VisitsService {
           },
         ],
       }),
+      createdAt: {
+        gte: new Date(new Date().setHours(0, 0, 0, 0)),
+        lte: new Date(new Date().setHours(23, 59, 59, 999)),
+      },
     };
 
     return this.prismaService.visit.count({ where });

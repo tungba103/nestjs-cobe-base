@@ -176,9 +176,10 @@ model Customer {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
-  Visit Visit[]
+  visits Visit[]
 
-  @@unique([parentPhone])
+  @@unique([name, parentPhone])
+  @@unique([name, birthDate])
   @@map("customers")
 }
 
