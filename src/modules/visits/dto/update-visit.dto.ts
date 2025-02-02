@@ -19,6 +19,12 @@ export class UpdateVisitDto {
   @ApiProperty({ required: false, example: 100000 })
   totalAmount?: number;
 
+  @IsNumber()
+  @IsOptional()
+  @Transform(({ value }) => Number(value))
+  @ApiProperty({ required: false, example: 100000 })
+  totalDiscount?: number;
+
   @IsString()
   @IsOptional()
   @ApiProperty({ required: false, example: 'Patient diagnosis details' })

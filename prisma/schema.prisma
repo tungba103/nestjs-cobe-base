@@ -261,6 +261,7 @@ model Visit {
   creatorId   Int  @map("creator_id")
   creatorName String @map("creator_name")
   totalAmount Float? @map("total_amount")
+  totalDiscount Float? @map("total_discount")
 
   diagnosis              String?
   symptoms               String?
@@ -272,6 +273,8 @@ model Visit {
 
   reExaminationTime DateTime? @map("re_examination_time")
   advice            String?
+
+  countByCustomer Int @default(1) @map("count_by_customer")
 
   status            VisitStatus @default(NEW)
   
@@ -296,8 +299,8 @@ model Prescription {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
-  PrescriptionItem PrescriptionItem[]
-  Visit            Visit[]
+  prescriptionItems PrescriptionItem[]
+  visits            Visit[]
 
   @@unique([visitId])
   @@map("prescriptions")
@@ -339,8 +342,8 @@ model ServiceUsage {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
-  ServiceUsageItem ServiceUsageItem[]
-  Visit            Visit[]
+  serviceUsageItems ServiceUsageItem[]
+  visits            Visit[]
 
   @@unique([visitId])
   @@map("service_usages")

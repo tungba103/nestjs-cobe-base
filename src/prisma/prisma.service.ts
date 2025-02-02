@@ -61,7 +61,7 @@ export class PrismaService
         );
       });
 
-      const result = `Query: ${simplifiedQuery} [${duration}ms]`;
+      const result = `${simplifiedQuery}`;
 
       return result;
     } catch (error) {

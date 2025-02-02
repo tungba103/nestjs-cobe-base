@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateVisitDto } from './dto/create-visit.dto';
 import { PrismaService } from 'prisma/prisma.service';
 import { FilterVisitDto } from './dto/filter-visit.dto';
@@ -10,15 +10,24 @@ import { UpdateVisitDto } from './dto/update-visit.dto';
 export class VisitsService {
   constructor(private prismaService: PrismaService) {}
 
-  create(
+  async create(
     creatorUser: { id: number; name: string },
     createVisitDto: CreateVisitDto,
   ) {
+    const existingVisit = await this.findLastVisitByCustomerId(
+      createVisitDto.customerId,
+    );
+
+    const countByCustomer = existingVisit
+      ? existingVisit.countByCustomer + 1
+      : 1;
+
     return this.prismaService.visit.create({
       data: {
         ...createVisitDto,
         creatorId: creatorUser.id,
         creatorName: creatorUser.name,
+        countByCustomer,
       },
     });
   }
@@ -56,6 +65,7 @@ export class VisitsService {
         customer: true,
         status: true,
         totalAmount: true,
+        countByCustomer: true,
         creatorId: true,
         creatorName: true,
         createdAt: true,
@@ -95,16 +105,27 @@ export class VisitsService {
         customer: true,
         prescription: {
           include: {
-            PrescriptionItem: true,
+            prescriptionItems: true,
           },
         },
         serviceUsage: {
           include: {
-            ServiceUsageItem: true,
+            serviceUsageItems: true,
           },
         },
       },
     });
+  }
+
+  async findLastVisitByCustomerId(customerId: number) {
+    const result = await this.prismaService.visit.findFirst({
+      where: { customerId },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return result;
   }
 
   async updateVisitInfo(visitId: number, data: UpdateVisitDto) {
@@ -113,85 +134,86 @@ export class VisitsService {
     const { prescriptionItems, ...prescriptionData } = prescription;
     const { serviceUsageItems, ...serviceUsageData } = serviceUsage;
 
-    const upsertPrescription = await this.upsertPrescription(
-      visitId,
-      {
-        ...prescriptionData,
-        visitId,
-      },
-      prescriptionItems,
-    );
-    const upsertServiceUsage = await this.upsertServiceUsage(
-      visitId,
-      {
-        ...serviceUsageData,
-        visitId,
-      },
-      serviceUsageItems,
-    );
+    console.log('prescriptionItems', prescriptionItems);
 
-    return this.prismaService.visit.update({
-      where: { id: visitId },
-      data: {
-        ...rest,
-        prescriptionId: upsertPrescription.id,
-        serviceUsageId: upsertServiceUsage.id,
-      },
-    });
-  }
+    try {
+      const updatedVisit = await this.prismaService.$transaction(async (tx) => {
+        const updatePrescription = await tx.prescription.upsert({
+          where: { visitId },
+          update: {
+            totalAmount: prescriptionData.totalAmount,
+            totalDiscount: prescriptionData.totalDiscount,
+            prescriptionItems: {
+              deleteMany: {},
+              ...(prescriptionItems?.length > 0 && {
+                createMany: { data: prescriptionItems },
+              }),
+            },
+          },
+          create: {
+            visitId,
+            totalAmount: prescriptionData.totalAmount,
+            totalDiscount: prescriptionData.totalDiscount,
+            prescriptionItems: {
+              ...(prescriptionItems?.length > 0 && {
+                createMany: { data: prescriptionItems },
+              }),
+            },
+          },
+        });
 
-  updateVisit(id: number, data: Prisma.VisitUpdateInput) {
-    return this.prismaService.visit.update({
-      where: { id },
-      data,
-    });
-  }
+        const updateServiceUsage = await tx.serviceUsage.upsert({
+          where: { visitId },
+          update: {
+            totalAmount: serviceUsageData.totalAmount,
+            totalDiscount: serviceUsageData.totalDiscount,
+            serviceUsageItems: {
+              deleteMany: {},
+              ...(serviceUsageItems?.length > 0 && {
+                createMany: { data: serviceUsageItems },
+              }),
+            },
+          },
+          create: {
+            visitId,
+            totalAmount: serviceUsageData.totalAmount,
+            totalDiscount: serviceUsageData.totalDiscount,
+            serviceUsageItems: {
+              ...(serviceUsageItems?.length > 0 && {
+                createMany: { data: serviceUsageItems },
+              }),
+            },
+          },
+        });
 
-  upsertPrescription(
-    visitId: number,
-    prescription: Prisma.PrescriptionUncheckedCreateInput,
-    prescriptionItems: Prisma.PrescriptionItemUncheckedCreateWithoutPrescriptionInput[],
-  ) {
-    return this.prismaService.prescription.upsert({
-      where: { visitId },
-      update: {
-        ...prescription,
-        PrescriptionItem: {
-          deleteMany: {},
-          createMany: { data: prescriptionItems },
-        },
-      },
-      create: {
-        visitId,
-        ...prescription,
-        PrescriptionItem: {
-          createMany: { data: prescriptionItems },
-        },
-      },
-    });
-  }
+        const updateVisit = await tx.visit.update({
+          where: { id: visitId },
+          data: {
+            ...rest,
+            prescriptionId: updatePrescription.id,
+            serviceUsageId: updateServiceUsage.id,
+            status: rest.status,
+          },
+          include: {
+            prescription: {
+              include: {
+                prescriptionItems: true,
+              },
+            },
+            serviceUsage: {
+              include: {
+                serviceUsageItems: true,
+              },
+            },
+          },
+        });
 
-  upsertServiceUsage(
-    visitId: number,
-    serviceUsage: Prisma.ServiceUsageUncheckedCreateInput,
-    serviceUsageItems: Prisma.ServiceUsageItemUncheckedCreateWithoutServiceUsageInput[],
-  ) {
-    return this.prismaService.serviceUsage.upsert({
-      where: { visitId },
-      update: {
-        ...serviceUsage,
-        ServiceUsageItem: {
-          deleteMany: {},
-          createMany: { data: serviceUsageItems },
-        },
-      },
-      create: {
-        visitId,
-        ...serviceUsage,
-        ServiceUsageItem: {
-          createMany: { data: serviceUsageItems },
-        },
-      },
-    });
+        return updateVisit;
+      });
+
+      return updatedVisit;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
   }
 }
