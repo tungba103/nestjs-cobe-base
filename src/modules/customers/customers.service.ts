@@ -101,16 +101,49 @@ export class CustomersService {
   }
 
   async update(id: number, updateCustomerDto: UpdateCustomerDto) {
-    if (updateCustomerDto.parentPhone) {
-      const existingCustomer = await this.prismaService.customer.findFirst({
+    const existingCustomer = await this.prismaService.customer.findFirst({
+      where: {
+        id,
+      },
+    });
+
+    if (!existingCustomer) {
+      throw new BadRequestException('Customer not found');
+    }
+
+    if (
+      updateCustomerDto.parentPhone !== existingCustomer.parentPhone ||
+      updateCustomerDto.name !== existingCustomer.name
+    ) {
+      const uniqueOne = await this.prismaService.customer.findFirst({
         where: {
-          parentPhone: updateCustomerDto.parentPhone,
-          id: { not: id },
+          parentPhone:
+            updateCustomerDto.parentPhone ?? existingCustomer.parentPhone,
+          name: updateCustomerDto.name ?? existingCustomer.name,
         },
       });
 
-      if (existingCustomer) {
-        throw new BadRequestException('Parent phone number already exists');
+      if (uniqueOne) {
+        throw new BadRequestException(
+          'Name And Parent phone number already exists',
+        );
+      }
+
+      if (
+        updateCustomerDto.name !== existingCustomer.name ||
+        updateCustomerDto.birthDate !== existingCustomer.birthDate
+      ) {
+        const uniqueTwo = await this.prismaService.customer.findFirst({
+          where: {
+            name: updateCustomerDto.name ?? existingCustomer.name,
+            birthDate:
+              updateCustomerDto.birthDate ?? existingCustomer.birthDate,
+          },
+        });
+
+        if (uniqueTwo) {
+          throw new BadRequestException('Name And Birth Date already exists');
+        }
       }
     }
 
