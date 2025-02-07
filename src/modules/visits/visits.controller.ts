@@ -7,6 +7,7 @@ import {
   Param,
   Query,
   Req,
+  Delete,
 } from '@nestjs/common';
 import { VisitsService } from './visits.service';
 import { CreateVisitDto } from './dto/create-visit.dto';
@@ -40,5 +41,10 @@ export class VisitsController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateVisitDto: UpdateVisitDto) {
     return this.visitsService.updateVisitInfo(+id, updateVisitDto);
+  }
+
+  @Delete(':id')
+  cancel(@Param('id') id: string) {
+    return this.visitsService.cancelVisit(+id);
   }
 }

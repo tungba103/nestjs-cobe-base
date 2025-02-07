@@ -2,7 +2,7 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateVisitDto } from './dto/create-visit.dto';
 import { PrismaService } from 'prisma/prisma.service';
 import { FilterVisitDto } from './dto/filter-visit.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, VisitStatus } from '@prisma/client';
 import { makePaginationResponse } from 'utils';
 import { UpdateVisitDto } from './dto/update-visit.dto';
 
@@ -76,9 +76,14 @@ export class VisitsService {
       },
       skip: (page - 1) * pageSize,
       take: pageSize,
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: [
+        {
+          status: 'asc',
+        },
+        {
+          createdAt: 'desc',
+        },
+      ],
     });
   }
 
@@ -201,6 +206,11 @@ export class VisitsService {
             prescriptionId: updatePrescription.id,
             serviceUsageId: updateServiceUsage.id,
             status: rest.status,
+            totalAmount:
+              updatePrescription.totalAmount + updateServiceUsage.totalAmount,
+            totalDiscount:
+              updatePrescription.totalDiscount +
+              updateServiceUsage.totalDiscount,
           },
           include: {
             prescription: {
@@ -223,5 +233,12 @@ export class VisitsService {
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
+  }
+
+  cancelVisit(visitId: number) {
+    return this.prismaService.visit.update({
+      where: { id: visitId },
+      data: { status: VisitStatus.CANCELLED },
+    });
   }
 }
