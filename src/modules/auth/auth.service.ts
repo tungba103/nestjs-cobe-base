@@ -24,8 +24,6 @@ export class AuthService {
   }
 
   async login(user: LoginDto) {
-    const payload = { username: user.username, password: user.password };
-
     const findUser = await this.usersService.findByUsername(user.username, {
       userRoles: true,
     });
@@ -33,7 +31,12 @@ export class AuthService {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...result } = findUser;
 
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
+    const payload = {
+      id: findUser.id,
+      name: findUser.name,
+    };
+
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '1y' });
     const refreshToken = await this.generateRefreshToken(findUser.id);
 
     return {

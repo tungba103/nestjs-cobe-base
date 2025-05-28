@@ -13,6 +13,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ServiceStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum VisitStatus {
+  NEW
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
 enum PermissionNameType {
   GET_USER
   GET_USERS
@@ -25,7 +47,23 @@ enum PermissionNameType {
   CREATE_ROLE
   UPDATE_ROLE
   // DELETE_ROLE
+
+  GET_CUSTOMER
+  GET_CUSTOMERS
+  CREATE_CUSTOMER
+  UPDATE_CUSTOMER
+
+  GET_PRODUCT
+  GET_PRODUCTS
+  CREATE_PRODUCT
+  UPDATE_PRODUCT
+
+  GET_SERVICE
+  GET_SERVICES
+  CREATE_SERVICE
+  UPDATE_SERVICE
 }
+
 
 model User {
   id        Int     @id @default(autoincrement())
@@ -123,4 +161,214 @@ model RolesOnPermissions {
 
   @@unique([roleId, permissionId])
   @@map("roles_permissions")
+}
+
+model Customer {
+  id          Int       @id @default(autoincrement())
+  name        String
+  gender      Gender?
+  birthDate   DateTime? @map("birth_date")
+  parentName  String    @map("parent_name")
+  parentPhone String    @map("parent_phone")
+  address     String?
+
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  visits Visit[]
+
+  @@unique([name, parentPhone])
+  @@unique([name, birthDate])
+  @@map("customers")
+}
+
+model Product {
+  id                Int           @id @default(autoincrement())
+  code              String
+  name              String
+  productCategoryId Int           @map("product_category_id")
+  price             Float
+  description       String?
+  status            ProductStatus @default(ACTIVE)
+
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  productCategory  ProductCategory    @relation(fields: [productCategoryId], references: [id])
+  PrescriptionItem PrescriptionItem[]
+
+  @@unique([code])
+  @@map("products")
+}
+
+model ProductCategory {
+  id          Int     @id @default(autoincrement())
+  code        String
+  name        String
+  description String?
+
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  Product Product[]
+
+  @@unique([code])
+  @@map("product_categories")
+}
+
+model Service {
+  id                Int           @id @default(autoincrement())
+  code              String
+  name              String
+  serviceCategoryId Int           @map("service_category_id")
+  price             Float
+  description       String?
+  status            ServiceStatus @default(ACTIVE)
+
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  serviceCategory  ServiceCategory    @relation(fields: [serviceCategoryId], references: [id])
+  ServiceUsageItem ServiceUsageItem[]
+
+  @@unique([code])
+  @@map("services")
+}
+
+model ServiceCategory {
+  id          Int     @id @default(autoincrement())
+  code        String
+  name        String
+  description String?
+
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  Service Service[]
+
+  @@unique([code])
+  @@map("service_categories")
+}
+
+model Visit {
+  id         Int @id @default(autoincrement())
+  customerId Int @map("customer_id")
+
+  creatorId   Int  @map("creator_id")
+  creatorName String @map("creator_name")
+  totalAmount Float? @map("total_amount")
+  totalDiscount Float? @map("total_discount")
+
+  diagnosis              String?
+  symptoms               String?
+  personalMedicalHistory String? @map("personal_medical_history")
+  familyMedicalHistory   String? @map("family_medical_history")
+
+  prescriptionId Int? @map("prescription_id")
+  serviceUsageId Int? @map("service_usage_id")
+
+  reExaminationTime DateTime? @map("re_examination_time")
+  advice            String?
+
+  countByCustomer Int @default(1) @map("count_by_customer")
+
+  status            VisitStatus @default(NEW)
+  
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  customer     Customer      @relation(fields: [customerId], references: [id])
+  prescription Prescription? @relation(fields: [prescriptionId], references: [id])
+  serviceUsage ServiceUsage? @relation(fields: [serviceUsageId], references: [id])
+
+  @@map("visits")
+}
+
+model Prescription {
+  id          Int   @id @default(autoincrement())
+  visitId     Int   @map("visit_id")
+  totalAmount Float @map("total_amount")
+  totalDiscount Float? @map("total_discount")
+
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  prescriptionItems PrescriptionItem[]
+  visits            Visit[]
+
+  @@unique([visitId])
+  @@map("prescriptions")
+}
+
+model PrescriptionItem {
+  id             Int    @id @default(autoincrement())
+  prescriptionId Int    @map("prescription_id")
+  productId      Int    @map("product_id")
+  productName    String @map("product_name")
+  quantity       Int
+  price          Float
+  discount       Float?
+
+  morningDosage     Int?    @map("morning_dosage")
+  noonDosage        Int?    @map("noon_dosage")
+  afternoonDosage   Int?    @map("afternoon_dosage")
+  eveningDosage     Int?    @map("evening_dosage")
+  usageInstructions String? @map("usage_instructions")
+  doctorNotes       String? @map("doctor_notes")
+
+  Prescription Prescription @relation(fields: [prescriptionId], references: [id])
+  Product      Product      @relation(fields: [productId], references: [id])
+
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@unique([prescriptionId, productId])
+  @@map("prescription_items")
+}
+
+model ServiceUsage {
+  id          Int   @id @default(autoincrement())
+  visitId     Int   @map("visit_id")
+  totalAmount Float @map("total_amount")
+  totalDiscount Float? @map("total_discount")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  serviceUsageItems ServiceUsageItem[]
+  visits            Visit[]
+
+  @@unique([visitId])
+  @@map("service_usages")
+}
+
+model ServiceUsageItem {
+  id             Int    @id @default(autoincrement())
+  serviceUsageId Int    @map("service_usage_id")
+  serviceId      Int    @map("service_id")
+  serviceName    String @map("service_name")
+  quantity       Int
+  price          Float
+  discount       Float?
+
+  usageInstructions String? @map("usage_instructions")
+  doctorNotes       String? @map("doctor_notes")
+
+  ServiceUsage ServiceUsage @relation(fields: [serviceUsageId], references: [id])
+  Service      Service      @relation(fields: [serviceId], references: [id])
+
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@unique([serviceUsageId, serviceId])
+  @@map("service_usage_items")
 }
