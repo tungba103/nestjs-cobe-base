@@ -1,5 +1,5 @@
 import { createLogger, format, transports } from 'winston';
-import path from 'path';
+import * as path from 'path';
 import { COMMON_CONSTANT } from '@n-constants';
 
 export const logger = ({ infoFile, errorFile }) =>

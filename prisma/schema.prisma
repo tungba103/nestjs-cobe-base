@@ -18,14 +18,13 @@ enum PermissionNameType {
   GET_USERS
   CREATE_USER
   UPDATE_USER
-  // DELETE_USER
 
   GET_ROLE
   GET_ROLES
   CREATE_ROLE
   UPDATE_ROLE
-  // DELETE_ROLE
 }
+
 
 model User {
   id        Int     @id @default(autoincrement())
@@ -56,7 +55,6 @@ model RefreshToken {
 
   user User @relation(fields: [userId], references: [id])
 
-  // @@unique([value])
   @@map("refresh_tokens")
 }
 

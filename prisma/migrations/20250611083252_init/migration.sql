@@ -81,9 +81,6 @@ CREATE TABLE "roles_permissions" (
 CREATE UNIQUE INDEX "users_username_key" ON "users"("username");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "refresh_tokens_value_key" ON "refresh_tokens"("value");
-
--- CreateIndex
 CREATE UNIQUE INDEX "roles_code_key" ON "roles"("code");
 
 -- CreateIndex

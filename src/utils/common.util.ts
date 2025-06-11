@@ -1,4 +1,4 @@
-import { COMMON_CONSTANT } from 'constants';
+import { COMMON_CONSTANT } from '@n-constants';
 
 export function makePaginationResponse(
   data: any,
