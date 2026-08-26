@@ -193,6 +193,10 @@ Request
           Bọc kết quả vào một "phong bì" chuẩn trước khi trả cho frontend.
 ```
 
+> 📌 Đây là bản **rút gọn** cho dễ nhớ. Thực tế Interceptor chạy **hai lần**: một nửa trước khi
+> Pipe/Controller chạy, một nửa sau khi có kết quả. Thứ tự đầy đủ và chính xác ở
+> [`02-CHI-TIET-THANH-PHAN.md` mục 27](./02-CHI-TIET-THANH-PHAN.md#27-thứ-tự-thực-thi-đầy-đủ).
+
 Kết quả frontend nhận được:
 
 ```jsonc
@@ -553,6 +557,9 @@ Ví dụ muốn thêm chức năng quản lý "lịch hẹn" (`appointments`):
 | Chạy được trên Docker, lỗi khi chạy máy thật | `.env.example` khai `DATABASE_HOST` **hai lần**; dòng sau (`postgres`) đè dòng trước. Chạy ngoài Docker phải sửa thành `localhost` + `DATABASE_PORT=5439` |
 | Code chạy dev bình thường, `yarn build` lại lỗi | Dev dùng `--transpile-only` (bỏ qua kiểm tra kiểu). Luôn `yarn build` trước khi push |
 | Tạo user qua API xong không đăng nhập được | Lỗi đã biết: `POST /users` lưu mật khẩu chưa mã hoá, còn lúc đăng nhập lại so bằng bcrypt |
+| `GET /customers` trả về `parent_phone`, còn `GET /customers/:id` trả `parentPhone` | `CustomersService.findAll` dùng SQL thô nên giữ nguyên tên cột snake_case của DB |
+| Danh sách lượt khám không thấy dữ liệu cũ | `VisitsService.findAll` ghi cứng khoảng thời gian "hôm nay" |
+| `GET /users` trả về cả cột `password` | Service `return` thẳng object Prisma, dự án chưa có DTO cho dữ liệu đi ra |
 
 ---
 
